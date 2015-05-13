@@ -17,11 +17,19 @@ int currentImage; // variable to keep track of the current image
 int currentImage2; //for the second
 float fc1, fc2; // global variables used by many vertices for their dynamic movement
 
+FFT fftLog;
+
 void setup() {
   size(800, 600, OPENGL); // use the OpenGL renderer
   textureMode(NORMAL); // set texture coordinate mode to NORMALIZED (0 to 1)
   smooth();
 
+  setupImages();
+  initAngles();
+}
+
+void setupImages()
+{
   // load the images from the _Images folder (relative path from this sketch's folder)
   images[0] = loadImage("../_Images/cyclone.jpg");
   images[1] = loadImage("../_Images/radar.jpg");
@@ -30,7 +38,10 @@ void setup() {
   images[4] = loadImage("../_Images/particles.jpg");
   currentImage = int(random(images.length)); // randomly choose the currentImage
   currentImage2 = int(random(images.length));
+}
 
+void initAngles()
+{
   float step = TWO_PI/NUMSEGMENTS; // generate the step size based on the number of segments
   // pre-calculate x and y based on angle and store values in two arrays
   for (int i=0; i<xL.length; i++) {
@@ -42,15 +53,14 @@ void setup() {
 
 void draw()
 {
-  drawBackgroundTexture();
-  drawTriangleStrip1_waveform();
-  drawOuterMovingShape();
-  drawCentreMovingShape();
-
   // calculate fc1 and fc2 once per draw(), since they are used for the dynamic movement of many vertices
   fc1 = frameCount*0.01;
   fc2 = frameCount*0.02;
 
+  drawBackgroundTexture();
+  drawTriangleStrip1_waveform();
+  drawOuterMovingShape();
+  drawCentreMovingShape();
   drawTriangleStrip2_spectro();
 }
 
