@@ -2,105 +2,67 @@ import processing.opengl.*; // import the OpenGL core library
 import ddf.minim.analysis.*;
 import ddf.minim.*;
 
-int NUMSEGMENTS = 16; // the number of segments for the shapes
-float DIAM_FIXED = 300; // the diameter of the rotating shape with the fixed texture
-float DIAM2_FIXED = 150; // the diameter of the rotating shape with the fixed texture
-float DIAM_INNER = 125; // the inner diameter of the moving shape with the moving texture
-float DIAM_OUTER = 275; // the outer diameter of the moving shape with the moving texture
-float DIAM_INNER2 = 125; //
-float DIAM_OUTER2 = 335; //
 
-// arrays to store the pre-calculated xy directions of all segments
-float[] xL = new float[NUMSEGMENTS];
-float[] yL = new float[NUMSEGMENTS];
-
-PImage[] images = new PImage[5]; // array to hold 4 input images
+CircularLayer[] layers;
+PImage[] images; // array to hold 4 input images
 int currentImage; // variable to keep track of the current image
 int currentImage2; //for the second
-float fc1, fc2; // global variables used by many vertices for their dynamic movement
 
-AudioInput audioSource;
-FFT fftLog;
 
-void setup() {
+void setup()
+{
   size(1000, 1000, OPENGL); // use the OpenGL renderer
   textureMode(NORMAL); // set texture coordinate mode to NORMALIZED (0 to 1)
-  smooth();
+  smooth(4);
 
   setupImages();
-  initAngles();
-  setupFFT();
+  setupLayers();
 }
 
 void setupImages()
 {
   // load the images from the _Images folder (relative path from this sketch's folder)
-  images[0] = loadImage("../_Images/cyclone.jpg");
-  images[1] = loadImage("../_Images/radar.jpg");
-  images[2] = loadImage("../_Images/happiness_texture.png");
-  images[3] = loadImage("../_Images/topo.jpg");
-  images[4] = loadImage("../_Images/particles.jpg");
+  images = new PImage[]{
+    loadImage("../_Images/cyclone.jpg"),
+    loadImage("../_Images/radar.jpg"),
+    loadImage("../_Images/happiness_texture.png"),
+    loadImage("../_Images/topo.jpg"),
+    loadImage("../_Images/particles.jpg")
+  };
   currentImage = int(random(images.length)); // randomly choose the currentImage
   currentImage2 = int(random(images.length));
 }
 
-void setupFFT()
+void setupLayers()
 {
-  // Initialise audio source (microphone)
-  audioSource = new Minim(this).getLineIn(Minim.MONO, 4096, 44100);
+  layers = new CircularLayer[4];
 
-  // Initialise Fast-Fourier-Transformer
-  fftLog = new FFT(audioSource.bufferSize(), audioSource.sampleRate());
-  fftLog.logAverages(100, 2); // adjust numbers to adjust spacing
+  layers[0] = new SpectrogramLayer(512, 125, 335,
+    new Minim(this).getLineIn(Minim.MONO, 2048, 22050));
+  layers[0].currentImage = images[0];
 
-  //println("logarithmic FFT averages: " + fftLog.avgSize());
-  assert fftLog.avgSize() >= NUMSEGMENTS;
-}
+  layers[1] = new OuterMovingShape(16, 300);
+  layers[1].currentImage = images[4];
 
-void initAngles()
-{
-  float step = TWO_PI/NUMSEGMENTS; // generate the step size based on the number of segments
-  // pre-calculate x and y based on angle and store values in two arrays
-  for (int i=0; i<xL.length; i++) {
-    float theta = step * i; // angle for this segment
-    xL[i] = sin(theta);
-    yL[i] = cos(theta);
-  }
+  layers[2] = new FoobarLayer(16, 125, 275);
+  layers[2].currentImage = images[3];
+
+  layers[3] = new CentreMovingShape(16, 150);
+  layers[3].currentImage = images[currentImage2];
 }
 
 void draw()
 {
-  // calculate fc1 and fc2 once per draw(), since they are used for the dynamic movement of many vertices
-  fc1 = frameCount*0.01;
-  fc2 = frameCount*0.02;
-
-  // grab new data window from audio source and calculate FFT
-  fftLog.forward(audioSource.mix);
-
   drawBackgroundTexture();
-  drawTriangleStrip1_waveform();
-  drawOuterMovingShape();
-  drawCentreMovingShape();
-  drawTriangleStrip2_spectro();
-}
-
-// custom method that draws a vertex with correct position and texture coordinates
-// based on index and a diameter input parameters
-void drawVertex(int index, float diam)
-{
-  float x = xL[index]*diam; // pre-calculated x direction times diameter
-  float y = yL[index]*diam; // pre-calculated y direction times diameter
-  // calculate texture coordinates based on the xy position
-  float tx = x/images[currentImage].width+0.5;
-  float ty = y/images[currentImage].height+0.5;
-  // draw vertex with the calculated position and texture coordinates
-  vertex(x, y, tx, ty);
+  for (CircularLayer l: layers)
+    l.run();
 }
 
 void keyPressed() {
-  currentImage = ++currentImage%images.length; // scroll through images on mouse press
+  currentImage = (currentImage + 1) % images.length;
 }
 
 void mouseClicked() {
-  currentImage2 = ++currentImage2%images.length;
+  currentImage2 = (currentImage2 + 1) % images.length;
+  layers[3].currentImage = images[currentImage2];
 }
