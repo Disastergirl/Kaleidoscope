@@ -1,4 +1,6 @@
 import processing.opengl.*; // import the OpenGL core library
+import ddf.minim.analysis.*;
+import ddf.minim.*;
 
 int NUMSEGMENTS = 16; // the number of segments for the shapes
 float DIAM_FIXED = 300; // the diameter of the rotating shape with the fixed texture
@@ -17,15 +19,17 @@ int currentImage; // variable to keep track of the current image
 int currentImage2; //for the second
 float fc1, fc2; // global variables used by many vertices for their dynamic movement
 
+AudioInput audioSource;
 FFT fftLog;
 
 void setup() {
-  size(800, 600, OPENGL); // use the OpenGL renderer
+  size(1000, 1000, OPENGL); // use the OpenGL renderer
   textureMode(NORMAL); // set texture coordinate mode to NORMALIZED (0 to 1)
   smooth();
 
   setupImages();
   initAngles();
+  setupFFT();
 }
 
 void setupImages()
@@ -38,6 +42,19 @@ void setupImages()
   images[4] = loadImage("../_Images/particles.jpg");
   currentImage = int(random(images.length)); // randomly choose the currentImage
   currentImage2 = int(random(images.length));
+}
+
+void setupFFT()
+{
+  // Initialise audio source (microphone)
+  audioSource = new Minim(this).getLineIn(Minim.MONO, 4096, 44100);
+
+  // Initialise Fast-Fourier-Transformer
+  fftLog = new FFT(audioSource.bufferSize(), audioSource.sampleRate());
+  fftLog.logAverages(100, 2); // adjust numbers to adjust spacing
+
+  //println("logarithmic FFT averages: " + fftLog.avgSize());
+  assert fftLog.avgSize() >= NUMSEGMENTS;
 }
 
 void initAngles()
@@ -56,6 +73,9 @@ void draw()
   // calculate fc1 and fc2 once per draw(), since they are used for the dynamic movement of many vertices
   fc1 = frameCount*0.01;
   fc2 = frameCount*0.02;
+
+  // grab new data window from audio source and calculate FFT
+  fftLog.forward(audioSource.mix);
 
   drawBackgroundTexture();
   drawTriangleStrip1_waveform();
