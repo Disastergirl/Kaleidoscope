@@ -15,7 +15,7 @@ class SpectrogramLayer extends CircularLayer
 	{
 	  // Initialise Fast-Fourier-Transformer
 	  fftLog = new FFT(audioSource.bufferSize(), audioSource.sampleRate());
-	  fftLog.logAverages(100, 80); // adjust numbers to adjust spacing
+	  fftLog.logAverages(50, 80); // adjust numbers to adjust spacing
 
 	  System.out.format("logarithmic FFT averages: %d\n", fftLog.avgSize());
 	  assert fftLog.avgSize() >= segmentCount;
@@ -34,17 +34,15 @@ class SpectrogramLayer extends CircularLayer
 	  beginShape(TRIANGLE_STRIP); // input the shapeMode in the beginShape() call
 	  texture(images[0]); // set the texture to use
 
-	  final float level = audioSource.mix.level();
-
 	  for (int i = 0; i < segmentCount + 1; i++)
 	  {
 	    int imi = i % segmentCount; // make sure the end equals the start
 
 	    // each vertex has a noise-based dynamic movement
-	    float dynamicOuter = pow(fftLog.getAvg(imi) / level, 0.1) * 0.8;
+	    float dynamicOuter = pow(fftLog.getAvg(imi), 1.5) * 0.05;
 
 	    drawCircleVertex(imi, innerRadius); // draw the vertex using the custom drawVertex() method
-	    drawCircleVertex(imi, outerRadius * dynamicOuter); // draw the vertex using the custom drawVertex() method
+	    drawCircleVertex(imi, outerRadius * (dynamicOuter + 1)); // draw the vertex using the custom drawVertex() method
 	  }
 
 	  endShape(); // finalize the Shape
