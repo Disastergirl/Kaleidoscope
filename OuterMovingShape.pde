@@ -1,5 +1,6 @@
 class OuterMovingShape extends CircularLayer
 {
+  float angle = 0;
 
   OuterMovingShape(int segmentCount, int radius)
   {
@@ -10,7 +11,12 @@ class OuterMovingShape extends CircularLayer
   {
     pushMatrix(); // use push/popMatrix so each Shape's translation does not affect other drawings
     translate(width/2, height/2); // translate to the left-center
-    rotate(frameCount*0.01); // rotate around this center
+
+    float level = audioSource.mix.level();
+    float step = level;
+    angle = (angle + step) % TWO_PI;
+    rotate(angle); // rotate around this center
+
     noStroke(); // turn off stroke
     beginShape(TRIANGLE_FAN); // input the shapeMode in the beginShape() call
     texture(currentImage); // set the texture to use
