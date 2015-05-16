@@ -8,6 +8,8 @@ PImage[] images; // array to hold 4 input images
 int currentImage; // variable to keep track of the current image
 int currentImage2; //for the second
 
+AudioInput audioSource;
+
 
 void setup()
 {
@@ -16,6 +18,9 @@ void setup()
   smooth(4);
 
   setupImages();
+
+  audioSource = new Minim(this).getLineIn(Minim.MONO, 2048, 22050);
+
   setupLayers();
 }
 
@@ -37,8 +42,7 @@ void setupLayers()
 {
   layers = new CircularLayer[4];
 
-  layers[0] = new SpectrogramLayer(512, 125, 335,
-    new Minim(this).getLineIn(Minim.MONO, 2048, 22050));
+  layers[0] = new SpectrogramLayer(512, 125, 335, audioSource);
   layers[0].currentImage = images[0];
 
   layers[1] = new OuterMovingShape(16, 300);
