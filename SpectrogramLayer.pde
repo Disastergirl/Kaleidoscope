@@ -4,9 +4,9 @@ class SpectrogramLayer extends CircularLayer
 	private AudioInput audioSource;
 	private FFT fftLog;
 
-	public SpectrogramLayer(int segmentCount, int innerRadius, int outerRadius, AudioInput audioSource)
+	public SpectrogramLayer(PImage img, int segmentCount, int innerRadius, int outerRadius, AudioInput audioSource)
 	{
-		super(segmentCount, innerRadius, outerRadius);
+		super(img, segmentCount, innerRadius, outerRadius);
 		this.audioSource = audioSource;
 		initFFT();
 	}

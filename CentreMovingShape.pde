@@ -1,9 +1,9 @@
 class CentreMovingShape extends CircularLayer
 {
 
-  CentreMovingShape(int segmentCount, int radius)
+  CentreMovingShape(PImage img, int segmentCount, int radius)
   {
-    super(segmentCount, 0, radius);
+    super(img, segmentCount, 0, radius);
   }
 
   void run()

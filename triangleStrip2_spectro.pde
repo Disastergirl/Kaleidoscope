@@ -1,9 +1,9 @@
 class FoobarLayer extends CircularLayer
 {
 
-	FoobarLayer(int segmentCount, int innerRadius, int outerRadius)
+	FoobarLayer(PImage img, int segmentCount, int innerRadius, int outerRadius)
 	{
-		super(segmentCount, innerRadius, outerRadius);
+		super(img, segmentCount, innerRadius, outerRadius);
 	}
 
 	void run()

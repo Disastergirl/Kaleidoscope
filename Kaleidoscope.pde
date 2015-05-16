@@ -40,26 +40,22 @@ void setupImages()
 
 void setupLayers()
 {
-  layers = new CircularLayer[4];
-
-  layers[0] = new SpectrogramLayer(512, 125, 335, audioSource);
-  layers[0].currentImage = images[0];
-
-  layers[1] = new OuterMovingShape(16, 300);
-  layers[1].currentImage = images[4];
-
-  layers[2] = new FoobarLayer(16, 125, 275);
-  layers[2].currentImage = images[3];
-
-  layers[3] = new CentreMovingShape(16, 150);
-  layers[3].currentImage = images[currentImage2];
+  layers = new CircularLayer[]{
+    new SpectrogramLayer(images[0], 512, 125, 290, audioSource),
+    //new OuterMovingShape(images[4], 16, 300),
+    //new FoobarLayer(images[3], 16, 125, 275),
+    //new CentreMovingShape(images[currentImage2], 16, 150),
+    null
+  };
 }
 
 void draw()
 {
   drawBackgroundTexture();
-  for (CircularLayer l: layers)
-    l.run();
+  for (CircularLayer l: layers) {
+    if (l != null)
+      l.run();
+  }
 }
 
 void keyPressed() {

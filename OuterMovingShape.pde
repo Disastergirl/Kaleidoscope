@@ -2,9 +2,9 @@ class OuterMovingShape extends CircularLayer
 {
   float angle = 0;
 
-  OuterMovingShape(int segmentCount, int radius)
+  OuterMovingShape(PImage img, int segmentCount, int radius)
   {
-    super(segmentCount, 0, radius);
+    super(img, segmentCount, 0, radius);
   }
 
   void run()

@@ -8,8 +8,9 @@ abstract class CircularLayer implements Runnable
 
   private final float[] xL, yL;
 
-  public CircularLayer(int segmentCount, int innerRadius, int outerRadius)
+  public CircularLayer(PImage img, int segmentCount, int innerRadius, int outerRadius)
   {
+    this.currentImage = img;
     this.segmentCount = segmentCount;
     this.innerRadius = innerRadius;
     this.outerRadius = outerRadius;
