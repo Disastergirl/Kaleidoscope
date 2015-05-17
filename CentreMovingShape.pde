@@ -8,8 +8,8 @@ class CentreMovingShape extends CircularLayer
 
   void run()
   {
-    float level = audioSource.mix.level();
-    float radius = outerRadius * pow(level, 0.5) * 4;
+    //float level = audioSource.mix.level();
+    float radius = outerRadius;// * pow(level, 0.5) * 4;
 
     pushMatrix(); // use push/popMatrix so each Shape's translation does not affect other drawings
     translate(width/2, height/2); // translate to the left-center

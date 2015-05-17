@@ -12,10 +12,10 @@ class OuterMovingShape extends CircularLayer
     pushMatrix(); // use push/popMatrix so each Shape's translation does not affect other drawings
     translate(width/2, height/2); // translate to the left-center
 
-    float level = audioSource.mix.level();
-    float step = level;
-    angle = (angle + step) % TWO_PI;
-    rotate(angle); // rotate around this center
+    //float level = audioSource.mix.level();
+    //float step = level;
+    //angle = (angle + step) % TWO_PI;
+    //rotate(angle); // rotate around this center
 
     noStroke(); // turn off stroke
     beginShape(TRIANGLE_FAN); // input the shapeMode in the beginShape() call
