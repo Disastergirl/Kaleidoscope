@@ -1,31 +1,26 @@
-class SpectrogramLayer extends CircularLayer
+class SpectrogramLayer extends CircularLayer implements AudioProcessor
 {
 
-	private AudioInput audioSource;
-	private FFT fftLog;
+	private AudioDispatcher audioDispatcher;
+	private final FFT fft;
+	private final float[] amplitudes, transformbuffer;
+	private final int samplesPerSegment;
 
-	public SpectrogramLayer(PImage img, int segmentCount, int innerRadius, int outerRadius, AudioInput audioSource)
+	public SpectrogramLayer(PImage img, int segmentCount, int innerRadius, int outerRadius, AudioDispatcher audioDispatcher)
 	{
 		super(img, segmentCount, innerRadius, outerRadius);
-		this.audioSource = audioSource;
-		initFFT();
-	}
 
-	private void initFFT()
-	{
-	  // Initialise Fast-Fourier-Transformer
-	  fftLog = new FFT(audioSource.bufferSize(), audioSource.sampleRate());
-	  fftLog.logAverages(50, 80); // adjust numbers to adjust spacing
-
-	  System.out.format("logarithmic FFT averages: %d\n", fftLog.avgSize());
-	  assert fftLog.avgSize() >= segmentCount;
+		this.audioDispatcher = audioDispatcher;
+		amplitudes = new float[audioBufferSize / 2];
+		transformbuffer = new float[audioBufferSize];
+		samplesPerSegment = amplitudes.length / segmentCount;
+		assert samplesPerSegment > 0;
+	  fft = new FFT(audioBufferSize);
+	  audioDispatcher.addAudioProcessor(this);
 	}
 
 	void run()
 	{
-		// grab new data window from audio source and calculate FFT
-  	fftLog.forward(audioSource.mix);
-
 	  pushMatrix(); // use push/popMatrix so each Shape's translation does not affect other drawings
 	  translate(width/2, height/2); // translate to the right-center
 	  stroke(255);
@@ -38,8 +33,8 @@ class SpectrogramLayer extends CircularLayer
 	  {
 	    int imi = i % segmentCount; // make sure the end equals the start
 
-	    // each vertex has a noise-based dynamic movement
-	    float dynamicOuter = pow(fftLog.getAvg(imi), 1.5) * 0.05;
+	    float dynamicOuter = getAvg(imi);
+	    //println(dynamicOuter);
 
 	    drawCircleVertex(imi, innerRadius); // draw the vertex using the custom drawVertex() method
 	    drawCircleVertex(imi, outerRadius * (dynamicOuter + 1)); // draw the vertex using the custom drawVertex() method
@@ -47,6 +42,29 @@ class SpectrogramLayer extends CircularLayer
 
 	  endShape(); // finalize the Shape
 	  popMatrix(); // use push/popMatrix so each Shape's translation does not affect other drawings
+	}
+
+	private float getAvg(int i)
+	{
+		final int offset = i * samplesPerSegment;
+		float sum = amplitudes[offset];
+    for (int j = 1; j < samplesPerSegment; j++)
+    	sum += amplitudes[offset + j];
+    return sum / samplesPerSegment;
+	}
+
+	boolean process(AudioEvent audioEvent)
+	{
+		float[] audioFloatBuffer = audioEvent.getFloatBuffer();
+		System.arraycopy(audioFloatBuffer, 0, transformbuffer, 0, audioFloatBuffer.length);
+		fft.forwardTransform(transformbuffer);
+		fft.modulus(transformbuffer, amplitudes);
+		return true;
+	}
+
+	void processingFinished()
+	{
+		// Nothing to do here
 	}
 
 }
